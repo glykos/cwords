@@ -1,0 +1,28 @@
+#!/bin/tcsh -f
+
+if ( $# != 2 ) then
+    echo "Usage : PCAwords <PCs> <cutoff>"
+    exit
+endif
+
+if (! -es $1 ) then
+    echo "Missing PCs file ? "
+    exit
+endif
+
+echo "\n==> Converting to words"
+eval "./words_52 < $1 > ZZZ_words"
+
+echo "\n==> Sorting/Merging"
+sort ZZZ_words | uniq -c | sort -n > ZZZ_pop
+
+echo "\n==> Selecting"
+awk -v cut="$2" '{if ($1 >= cut) print $1,$2}' ZZZ_pop | tac > ZZZ_selected
+awk '{print $2}' ZZZ_selected > ZZZ_selected_words
+
+echo "\n==> Clustering words"
+./merge < ZZZ_selected_words > ZZZ_clusters
+
+echo "\n==> Clustering structures"
+eval "./words52_to_PCs < $1 > ZZZ_FINAL"
+
