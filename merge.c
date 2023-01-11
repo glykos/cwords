@@ -3,9 +3,9 @@
 #include <stdlib.h>
 #include <string.h>
 
-int     c[50000];
-char    wori[50000][6];
-char    w[50000][6];
+int     c[500000];
+char    wori[500000][6];
+char    w[500000][6];
 
 
 int main()
@@ -65,12 +65,12 @@ int main()
         }
         if ( added > 0 ) 
             { 
-                fprintf(stderr, "Added %d members to cluster %d\n", added, current );
+                fprintf(stderr, "Added %6d members to cluster %3d\n", added, current );
                 printed = 1;
             }
     }
     if ( printed == 0 )
-        fprintf(stderr, "Added 1 member to cluster %d\n", current );
+        fprintf(stderr, "Added %6d member  to cluster %3d\n", 1, current );
     }
 
 
