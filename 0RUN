@@ -1,7 +1,11 @@
 #!/bin/tcsh -f
 
-if ( $# != 2 ) then
-    echo "Usage : PCAwords <PCs> <cutoff>"
+if ( $# == 2 ) then
+    @ cutoff = $2
+endif
+
+if ( $# != 1 && $# != 2 ) then
+    echo "Usage : PCAwords <PCs> [cutoff]"
     exit
 endif
 
@@ -16,13 +20,50 @@ eval "./words_52 < $1 > ZZZ_words"
 echo "\n==> Sorting/Merging"
 sort ZZZ_words | uniq -c | sort -n > ZZZ_pop
 
-echo "\n==> Selecting"
-awk -v cut="$2" '{if ($1 >= cut) print $1,$2}' ZZZ_pop | tac > ZZZ_selected
+
+if ( $# == 1 ) then
+
+echo "\n==> Testing cutoffs ..."
+set cut = 20
+set nofcprev = 10000
+
+while ( $cut <= 200 )
+
+awk -v cut="$cut" '{if ($1 >= cut) print $1,$2}' ZZZ_pop | tac > ZZZ_selected
 awk '{print $2}' ZZZ_selected > ZZZ_selected_words
 
+(./merge < ZZZ_selected_words > ZZZ_clusters) >& ZZZ_testing
+
+set nofc = `grep 'to cluster' ZZZ_testing | tail -1 | awk '{print $6}'`
+
+printf "Cutoff %5d => %5d clusters\n" $cut $nofc
+
+if ( $nofcprev - $nofc <= 0 && $cut > 30 ) then
+    @ cutoff = $cut - 10
+    @ cut = 210
+endif
+
+@ nofcprev = $nofc
+@ cut += 10
+
+end
+
+endif
+
+
+
+echo "\n==> Selected cutoff is $cutoff" 
+
 echo "\n==> Clustering words"
+awk -v cut="$cutoff" '{if ($1 >= cut) print $1,$2}' ZZZ_pop | tac > ZZZ_selected
+awk '{print $2}' ZZZ_selected > ZZZ_selected_words
 ./merge < ZZZ_selected_words > ZZZ_clusters
+
 
 echo "\n==> Clustering structures"
 eval "./words52_to_PCs < $1 > ZZZ_FINAL"
+
+set tot = `wc -l < ZZZ_FINAL`
+echo "\n==> $tot structures assigned.\n"
+
 

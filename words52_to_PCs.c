@@ -3,13 +3,13 @@
 #include <stdlib.h>
 #include <string.h>
 
-float   dat[11000000][5];
-int     indeces[11000000];
+float   dat[25000000][5];
+int     indeces[25000000];
 int     N;
 
 char    currw[6];
-char    words[50000][6];
-int     c[50000];
+char    words[500000][6];
+int     c[500000];
 
 int main()
 {
@@ -17,13 +17,23 @@ int main()
     float   max1, min1, max2, min2, max3, min3, max4, min4, max5, min5;
     FILE    *clu;
     int     Nw = 0;
+    char    in[1000];
 
 
-    while( scanf("%d %f %f %f %f %f", &i, &dat[N][0], &dat[N][1], &dat[N][2], &dat[N][3], &dat[N][4] ) == 6 )
+    while( fgets( in, 1000, stdin ) != NULL )
     {
-        indeces[N] = i;
-        N++;
+        if ( sscanf(in, "%d %f %f %f %f %f", &i, &dat[N][0], &dat[N][1], &dat[N][2], &dat[N][3], &dat[N][4] ) == 6 )
+        {
+            indeces[N] = i;
+            N++;
+        }
+        else
+        {
+            fprintf(stderr, "Failed to read PCs at line %s\n", in );
+            exit( 1 );
+        }
     }
+
 
     min1 = dat[0][0]; min2 = dat[0][1]; min3 = dat[0][2]; min4 = dat[0][3]; min5 = dat[0][4];
     max1 = dat[0][0]; max2 = dat[0][1]; max3 = dat[0][2]; max4 = dat[0][3]; max5 = dat[0][4];
