@@ -2,6 +2,7 @@
 #include <math.h>
 #include <stdlib.h>
 #include <string.h>
+#include <omp.h>
 
 int     c[500000];
 char    wori[500000][6];
@@ -27,6 +28,7 @@ int main()
 
     fprintf( stderr, "Read %d words.\n", N );
 
+
     while ( 1 )
     {
     current++;
@@ -40,11 +42,15 @@ int main()
     if ( i == N )
         break;
 
+
     added = 1;
     printed = 0;
+    
     while( added > 0 )
     {
         added = 0;
+
+        #pragma omp parallel for private( i,dist)
         for( i=0 ; i < N ; i++ )
         {
             if ( c[i] == current )
@@ -63,12 +69,14 @@ int main()
                 }
             }
         }
+    
         if ( added > 0 ) 
             { 
                 fprintf(stderr, "Added %6d members to cluster %3d\n", added, current );
                 printed = 1;
             }
     }
+    
     if ( printed == 0 )
         fprintf(stderr, "Added %6d member  to cluster %3d\n", 1, current );
     }
