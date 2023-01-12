@@ -2,9 +2,11 @@
 #include <math.h>
 #include <stdlib.h>
 #include <string.h>
+#include <omp.h>
 
 float   dat[25000000][5];
 int     indeces[25000000];
+int     nclu[25000000];
 int     N;
 
 char    currw[6];
@@ -61,6 +63,7 @@ int main()
 
     fprintf(stderr, "Read %d words.\n", Nw );
 
+    #pragma omp parallel for private( i, k, m, currw )
     for ( i=0 ; i < N ; i++ )
     {
         k = 'A'+(int)((dat[i][0]-min1)/((max1-min1)/51.0));
@@ -86,10 +89,14 @@ int main()
         for ( m=0 ; m < Nw ; m++ )
             if ( currw[0] == words[m][0] && currw[1] == words[m][1] && currw[2] == words[m][2] && currw[3] == words[m][3] && currw[4] == words[m][4] )
             {
-                printf("%10d %4d  %10.7f %10.7f %10.7f %10.7f %10.7f\n", indeces[i], c[m], dat[i][0], dat[i][1], dat[i][2], dat[i][3], dat[i][4] );
+                nclu[ i ] = c[m];
                 break;
             }
     }
+
+    for ( i=0 ; i < N ; i++ )
+        if ( nclu[ i ] > 0 )
+            printf("%10d %4d  %10.7f %10.7f %10.7f %10.7f %10.7f\n", indeces[i], nclu[i], dat[i][0], dat[i][1], dat[i][2], dat[i][3], dat[i][4] );
 
 }
 

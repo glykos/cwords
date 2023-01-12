@@ -1,5 +1,7 @@
 #!/bin/tcsh -f
 
+set cutoff = 0
+
 if ( $# == 2 ) then
     @ cutoff = $2
 endif
@@ -25,7 +27,7 @@ if ( $# == 1 ) then
 
 echo "\n==> Testing cutoffs ..."
 set cut = 20
-set nofcprev = 10000
+set nofcprev = 0
 
 while ( $cut <= 200 )
 
@@ -38,15 +40,24 @@ set nofc = `grep 'to cluster' ZZZ_testing | tail -1 | awk '{print $6}'`
 
 printf "Cutoff %5d => %5d clusters\n" $cut $nofc
 
-if ( $nofcprev - $nofc <= 0 && $cut > 30 ) then
-    @ cutoff = $cut - 10
-    @ cut = 210
+if ( $nofc - $nofcprev <= -2 && $cutoff == 0 ) then
+    @ cutoff = $cut
+endif
+
+if ( $nofc - $nofcprev >= 0 && $cutoff > 0 ) then
+    @ cutoff = $cut
+    @ cut = 300
 endif
 
 @ nofcprev = $nofc
 @ cut += 10
 
 end
+
+if ( $cut < 300 ) then
+    echo "[1m[31mLogic failure at cluster determination. Abort.[m"
+    exit
+endif
 
 endif
 
