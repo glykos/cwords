@@ -56,7 +56,7 @@ int main()
     fprintf(stderr, "Read %d data points.\n", N );
 
 
-    clu = fopen( "ZZZ_clusters", "r" );
+    clu = fopen( "cwords_clusters", "r" );
     while( fscanf( clu, "%s %d", words[Nw], &c[Nw]) == 2 )
         Nw++;
     fclose( clu );

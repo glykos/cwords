@@ -1,0 +1,119 @@
+#!/bin/tcsh -f
+
+set time1 = `date +%s`
+
+set called=($_)
+
+if ( "$called" != "" ) then  ### called by source 
+   set script_fn=`readlink -f $called[2]`
+else                         ### called by direct execution of the script
+   set script_fn=`readlink -f $0`
+endif
+
+set script_dir=`dirname $script_fn`
+set rootdir = `dirname $script_fn`
+set abs_rootdir = `cd $rootdir && pwd`
+
+
+
+set cutoff = 0
+
+if ( $1 == "-v" ) then
+    set argv = ($2 $3)
+endif
+
+if ( $# != 1 && $# != 2 ) then
+    echo "Usage : cwords <PCs> [cutoff]"
+    exit
+endif
+
+if (! -es $1 ) then
+    echo "cwords : Missing data file ? "
+    exit
+endif
+
+if ( $# == 2 ) then
+    echo $2 | egrep  '^[0-9][0-9]*$' >&! /dev/null
+    if ($status != 0 ) then
+        echo "Usage : cwords <PCs> [cutoff]"
+        exit
+    endif
+    @ cutoff = $2
+endif
+
+echo "\n==> Converting to words"
+eval "$abs_rootdir/words_52 < $1 > cwords_words"
+
+echo "\n==> Sorting/Merging"
+sort cwords_words | uniq -c | sort -n > cwords_pop
+
+
+if ( $# == 1 ) then
+
+echo "\n==> Testing cutoffs ..."
+set cut = 20
+set nofcprev = 0
+
+while ( $cut <= 400 )
+
+awk -v cut="$cut" '{if ($1 >= cut) print $1,$2}' cwords_pop | tac > cwords_selected
+awk '{print $2}' cwords_selected > cwords_selected_words
+
+($abs_rootdir/merge < cwords_selected_words > cwords_clusters) >& cwords_testing
+
+set nofc = `grep 'to cluster' cwords_testing | tail -1 | awk '{print $6}'`
+
+if ( $nofc < 1 ) then
+    echo "[1m[31mLogic failure : empty clusters. Abort.[m"
+    exit
+endif
+
+
+printf "Cutoff %5d => %5d clusters\n" $cut $nofc
+
+if ( $nofc - $nofcprev <= -1 && $cutoff == 0 ) then
+    @ cutoff = $cut
+endif
+
+if ( $nofc - $nofcprev >= -2 && $cutoff > 0 ) then
+    @ cutoff = $cut
+    @ cut = 500
+endif
+
+@ nofcprev = $nofc
+@ cut += 10
+
+end
+
+if ( $cut < 500 ) then
+    echo "[1m[31mLogic failure at cluster determination. Abort.[m"
+    exit
+endif
+
+endif
+
+
+
+echo "\n==> Selected cutoff is $cutoff" 
+
+echo "\n==> Clustering words"
+awk -v cut="$cutoff" '{if ($1 >= cut) print $1,$2}' cwords_pop | tac > cwords_selected
+awk '{print $2}' cwords_selected > cwords_selected_words
+$abs_rootdir/merge < cwords_selected_words > cwords_clusters
+
+
+echo "\n==> Clustering structures"
+eval "$abs_rootdir/words52_to_PCs < $1 > cwords_FINAL"
+
+set tot = `wc -l < cwords_FINAL`
+echo "\n==> $tot structures assigned.\n"
+
+cp cwords_FINAL carma.5-D.clusters.dat
+
+set time2 = `date +%s`
+@ dt = $time2 - $time1
+
+echo "All done in $dt seconds."
+
+
+
