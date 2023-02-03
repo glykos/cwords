@@ -17,6 +17,9 @@ set abs_rootdir = `cd $rootdir && pwd`
 
 
 set cutoff = 0
+set minus1 = -1
+set minus2 = -1
+set minus3 = -1
 
 if ( $1 == "-v" ) then
     set argv = ($2 $3)
@@ -71,6 +74,10 @@ endif
 
 printf "Cutoff %5d => %5d clusters\n" $cut $nofc
 
+@ minus3 = $minus2
+@ minus2 = $minus1
+@ minus1 = $nofc
+
 if ( $nofc - $nofcprev <= -1 && $cutoff == 0 ) then
     @ cutoff = $cut
 endif
@@ -90,9 +97,11 @@ if ( $cut < 500 ) then
     exit
 endif
 
+if ( $minus3 - $nofc > 3 ) then
+    @ cutoff -= 20
 endif
 
-
+endif
 
 echo "\n==> Selected cutoff is $cutoff" 
 
