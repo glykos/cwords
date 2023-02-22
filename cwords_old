@@ -50,23 +50,11 @@ eval "$abs_rootdir/words_52 < $1 > cwords_words"
 echo "\n==> Sorting/Merging"
 sort cwords_words | uniq -c | sort -n > cwords_pop
 
-echo "\n==> Cutoff limit determination"
-set start_cut = `awk '{print $1}' cwords_pop | uniq | nl | awk '{if ($1 != $2) print $2}' | head -1 | awk '{print int($1/10)}'`
-if ( $start_cut <= 1 ) then
-    @ start_cut = 2
-endif
-@ step_cut = $start_cut / 2
-if ( $start_cut > 20 ) then
-    @ start_cut = 20
-    @ step_cut  = 10
-endif
-printf "Starting cutoff and step are : %d %d\n" $start_cut $step_cut
-
 
 if ( $# == 1 ) then
 
 echo "\n==> Testing cutoffs ..."
-set cut = $start_cut
+set cut = 20
 set nofcprev = 0
 
 while ( $cut <= 400 )
@@ -94,13 +82,13 @@ if ( $nofc - $nofcprev <= -1 && $cutoff == 0 ) then
     @ cutoff = $cut
 endif
 
-if ( $nofc - $nofcprev >= -2 && $nofc - $nofcprev <= 1 && $cutoff > 0 ) then
+if ( $nofc - $nofcprev >= -2 && $cutoff > 0 ) then
     @ cutoff = $cut
     @ cut = 500
 endif
 
 @ nofcprev = $nofc
-@ cut += $step_cut
+@ cut += 10
 
 end
 
@@ -109,8 +97,8 @@ if ( $cut < 500 ) then
     exit
 endif
 
-if ( $minus3 - $nofc >= 1 && $minus3 - $nofc < $nofc ) then
-    @ cutoff -= $step_cut * 2
+if ( $minus3 - $nofc > 3 ) then
+    @ cutoff -= 20
 endif
 
 endif
