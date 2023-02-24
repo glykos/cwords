@@ -82,7 +82,7 @@ if ( $nofc - $nofcprev <= -1 && $cutoff == 0 ) then
     @ cutoff = $cut
 endif
 
-if ( $nofc - $nofcprev >= -2 && $cutoff > 0 ) then
+if ( $nofc - $nofcprev >= -2 && $nofc - $nofcprev <= 1 && $cutoff > 0 ) then
     @ cutoff = $cut
     @ cut = 500
 endif
@@ -97,9 +97,15 @@ if ( $cut < 500 ) then
     exit
 endif
 
-if ( $minus3 - $nofc > 3 ) then
-    @ cutoff -= 20
-endif
+# if ( $minus3 > 0 && $minus3 - $nofc >= 2 ) then
+#     @ cutoff -= 20
+# endif
+# 
+# if ( $minus3 < 0 && $minus2 > 0 && $minus2 - $nofc >= 2 ) then
+#     @ cutoff -= 10
+# endif
+
+
 
 endif
 
