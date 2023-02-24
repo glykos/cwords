@@ -6,7 +6,7 @@
 float   dat[25000000][5];
 int     indeces[25000000];
 int     N;
-
+int     DIV;
 
 int main()
 {
@@ -45,27 +45,34 @@ int main()
         if ( dat[i][4] > max5 ) max5 = dat[i][4];
     }
 
+    DIV = (int)((2*pow( N, 0.20l))+0.50); 
+    if ( DIV > 51 )
+        DIV = 51;
+    if ( DIV < 5 )
+        DIV = 5;
+
     fprintf(stderr, "Read %d data points.\n", N );
+    fprintf(stderr, "Will divide each dimension in %d parts.\n", DIV );
 
     for ( i=0 ; i < N ; i++ )
     {
-        k = 'A'+(int)((dat[i][0]-min1)/((max1-min1)/51.0));
+        k = 'A'+(int)((dat[i][0]-min1)/((max1-min1)/DIV));
         if ( k > 'Z' ) k += 6;
         printf("%c", (char)(k) );
 
-        k = 'A'+(int)((dat[i][1]-min2)/((max2-min2)/51.0));
+        k = 'A'+(int)((dat[i][1]-min2)/((max2-min2)/DIV));
         if ( k > 'Z' ) k += 6;
         printf("%c", (char)(k) );
         
-        k = 'A'+(int)((dat[i][2]-min3)/((max3-min3)/51.0));
+        k = 'A'+(int)((dat[i][2]-min3)/((max3-min3)/DIV));
         if ( k > 'Z' ) k += 6;
         printf("%c", (char)(k) );
         
-        k = 'A'+(int)((dat[i][3]-min4)/((max4-min4)/51.0));
+        k = 'A'+(int)((dat[i][3]-min4)/((max4-min4)/DIV));
         if ( k > 'Z' ) k += 6;
         printf("%c", (char)(k) );
         
-        k = 'A'+(int)((dat[i][4]-min5)/((max5-min5)/51.0));
+        k = 'A'+(int)((dat[i][4]-min5)/((max5-min5)/DIV));
         if ( k > 'Z' ) k += 6;
         printf("%c\n", (char)(k) );
 
