@@ -4,31 +4,43 @@
 #include <string.h>
 #include <omp.h>
 
-int     c[500000];
-char    wori[500000][6];
-char    w[500000][6];
+
+#define     MAX_STRUCT      25000000
+#define     MAX_PCs         10
+#define     MAX_CLU         500000
+
+int     c[ MAX_CLU ];
+char    wori[ MAX_CLU ][ MAX_PCs+1 ];
+char    w[ MAX_CLU ][ MAX_PCs+1 ];
 
 
 int main()
 {
     int     N=0;
     int     added, current=0;
-    int     i, k, dist, printed;
+    int     i, k, m, dist, printed;
+    int     nofPCs = -1; 
 
+
+    /* Read list of words */
     while( scanf("%s", wori[N] ) == 1 )
     {
+        if ( nofPCs < 0 )
+            nofPCs = strlen( wori[N] );
+
         strcpy( w[N], wori[N] );
 
-        for( i=0 ; i < 5 ; i++ )
+        for( i=0 ; i < nofPCs ; i++ )
             if ( w[N][i] > 'Z' )
                 w[N][i] -= 6;
 
         N++;
     }
 
-    fprintf( stderr, "Read %d words.\n", N );
+    fprintf( stderr, "Read %d words (%d-dimensional vectors).\n", N, nofPCs );
 
 
+    /* Find other words with a distance less than cutoff & assign to same cluster */
     while ( 1 )
     {
     current++;
@@ -59,12 +71,19 @@ int main()
                 {
                     if ( c[k] == 0 )
                     {
-                    dist = 4*abs(w[i][0]-w[k][0]) + 3*abs(w[i][1]-w[k][1]) + 2*abs(w[i][2]-w[k][2]) + abs(w[i][3]-w[k][3]) + abs(w[i][4]-w[k][4]);
-                    if ( dist <= 10 )
-                    {
-                        c[k] = current;
-                        added++;
-                    }
+                        dist = 4*abs(w[i][0]-w[k][0]) + 3*abs(w[i][1]-w[k][1]) + 2*abs(w[i][2]-w[k][2]) + abs(w[i][3]-w[k][3]) + abs(w[i][4]-w[k][4]) +
+                                 abs(w[i][5]-w[k][5]) +   abs(w[i][6]-w[k][6]) +   abs(w[i][7]-w[k][7]) + abs(w[i][8]-w[k][8]) + abs(w[i][9]-w[k][9]) ;
+
+
+                         /* dist += abs(w[i][m]-w[k][m]) ; */
+                         /* dist += (nofPCs-m)*abs(w[i][m]-w[k][m]) ; */
+                         /* dist += (nofPCs-m-1>0?nofPCs-m-1:1)*abs(w[i][m]-w[k][m]) ; */
+
+                        if ( dist <= 10 )
+                            {
+                                c[k] = current;
+                                added++;
+                            }
                     }
                 }
             }
