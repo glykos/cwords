@@ -92,6 +92,7 @@ int main()
 
     /* fprintf(stderr, "%f %f %f %f\n", min[0], max[0], min[1], max[1] );   */
     /* DIV = (int)((2*pow( N, (1.0l/(tot_col-1))))+0.50);                   */
+    /* DIV = (int)((2*pow( N, 0.20l))+0.50);                                */
 
     DIV = (int)((2*pow( N, 0.20l))+0.50);
 

@@ -50,17 +50,19 @@ eval "$abs_rootdir/words_52 < $1 > cwords_words"
 echo "\n==> Sorting/Merging"
 sort cwords_words | uniq -c | sort -n > cwords_pop
 
-echo "\n==> Cutoff limit determination"
-set start_cut = `awk '{print $1}' cwords_pop | uniq | nl | awk '{if ($1 != $2) print $2}' | head -1 | awk '{print int($1/10)}'`
-if ( $start_cut <= 1 ) then
-    @ start_cut = 2
-endif
-@ step_cut = $start_cut / 2
-if ( $start_cut > 20 ) then
+set nofPCs = `tail -1 cwords_words | wc -c | awk '{print $1-1}'`
+set start_cut = `awk '{print $1}' cwords_pop | uniq | nl | awk '{if ($1 != $2) print $2}' | head -1 | awk '{print int($1/20)}'`
+set lines = `wc -l $1 | awk '{print $1}'`
+printf "Tentative starting cutoff is %d\n" $start_cut
+
+if ( $lines > 50000 && $start_cut < 20 && $nofPCs > 5 ) then
+    @ start_cut = 10
+    @ step_cut  = 3
+else
     @ start_cut = 20
     @ step_cut  = 10
 endif
-printf "Starting cutoff and step are : %d %d\n" $start_cut $step_cut
+
 
 
 if ( $# == 1 ) then
@@ -78,25 +80,44 @@ awk '{print $2}' cwords_selected > cwords_selected_words
 
 set nofc = `grep 'to cluster' cwords_testing | tail -1 | awk '{print $6}'`
 
-if ( $nofc < 1 ) then
+if ( $nofc < 1 && $lines > 50000 ) then
     echo "[1m[31mLogic failure : empty clusters. Abort.[m"
     exit
 endif
 
-
 printf "Cutoff %5d => %5d clusters\n" $cut $nofc
+
+if ( $nofc < 1 && $lines <= 50000 ) then
+    @ nofc = 0
+    @ nofcprev = 0
+    if ( $cut <= 20 ) then
+        @ cut = 10
+    else
+        @ cut = 20
+    endif
+endif
 
 @ minus3 = $minus2
 @ minus2 = $minus1
 @ minus1 = $nofc
 
-if ( $nofc - $nofcprev <= -1 && $cutoff == 0 ) then
+if ( $nofc - $nofcprev <= 0 && $cutoff == 0 ) then
     @ cutoff = $cut
 endif
 
 if ( $nofc - $nofcprev >= -2 && $nofc - $nofcprev <= 1 && $cutoff > 0 ) then
-    @ cutoff = $cut
-    @ cut = 500
+    @ cut += $step_cut
+    awk -v cut="$cut" '{if ($1 >= cut) print $1,$2}' cwords_pop | tac > cwords_selected
+    awk '{print $2}' cwords_selected > cwords_selected_words
+    ($abs_rootdir/merge < cwords_selected_words > cwords_clusters) >& cwords_testing
+    set nofc_next = `grep 'to cluster' cwords_testing | tail -1 | awk '{print $6}'`
+    @ cut -= $step_cut
+    if ( $nofc_next >= $nofc ) then
+        @ cutoff = 0
+    else
+        @ cutoff = $cut
+        @ cut = 500
+    endif
 endif
 
 @ nofcprev = $nofc
@@ -109,9 +130,19 @@ if ( $cut < 500 ) then
     exit
 endif
 
-if ( $minus3 - $nofc >= 1 && $minus3 - $nofc < $nofc ) then
-    @ cutoff -= $step_cut * 2
+if ( $cutoff > 20 && $minus2 - $nofc >= 0 && $minus2 - $nofc < 5 ) then
+    @ cutoff -= $step_cut
 endif
+
+# if ( $minus3 > 0 && $minus3 - $nofc >= 2 ) then
+#     @ cutoff -= 20
+# endif
+# 
+# if ( $minus3 < 0 && $minus2 > 0 && $minus2 - $nofc >= 2 ) then
+#     @ cutoff -= 10
+# endif
+
+
 
 endif
 
