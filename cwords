@@ -121,7 +121,7 @@ if ( $cut < 500 ) then
 endif
 
 if ( $cutoff > 20 && $minus2 - $nofc >= 0 && $minus2 - $nofc < 5 ) then
-    @ cutoff -= 10
+    @ cutoff -= $step_cut
 endif
 
 # if ( $minus3 > 0 && $minus3 - $nofc >= 2 ) then
