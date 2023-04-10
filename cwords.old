@@ -50,19 +50,9 @@ eval "$abs_rootdir/words_52 < $1 > cwords_words"
 echo "\n==> Sorting/Merging"
 sort cwords_words | uniq -c | sort -n > cwords_pop
 
-set nofPCs = `tail -1 cwords_words | wc -c | awk '{print $1-1}'`
-set start_cut = `awk '{print $1}' cwords_pop | uniq | nl | awk '{if ($1 != $2) print $2}' | head -1 | awk '{print int($1/20)}'`
+@ start_cut = 20
+@ step_cut  = 10
 set lines = `wc -l $1 | awk '{print $1}'`
-printf "Tentative starting cutoff is %d\n" $start_cut
-
-if ( $lines > 50000 && $start_cut < 20 && $nofPCs > 5 ) then
-    @ start_cut = 10
-    @ step_cut  = 3
-else
-    @ start_cut = 20
-    @ step_cut  = 10
-endif
-
 
 
 if ( $# == 1 ) then
