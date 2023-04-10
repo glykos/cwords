@@ -1,5 +1,20 @@
 #!/bin/tcsh -f
 
+######################################################################
+# 
+# What on earth is this ? 
+#   This is a tcsh shell script !
+#
+# Why ?
+#   I do not know. What I do know, however, is that I have regrets.
+#   Lots of them. This should have been written in a normal, everyday, 
+#   human-friendly, scripting language. Not bloody tcsh. Life.
+# 
+# Now what ?
+#   Nothing. Hope that you never have to meaningfully edit this mess.
+#
+######################################################################
+
 set time1 = `date +%s`
 
 set called=($_)
@@ -13,8 +28,6 @@ endif
 set script_dir=`dirname $script_fn`
 set rootdir = `dirname $script_fn`
 set abs_rootdir = `cd $rootdir && pwd`
-
-
 
 set cutoff = 0
 set minus1 = -1
@@ -46,93 +59,132 @@ endif
 
 echo "\n==> Converting to words"
 eval "$abs_rootdir/words_52 < $1 > cwords_words"
+if ($status != 0 ) then
+    echo "[1m[31mMalformed PC file ? Abort.[m"
+    echo "Usage : cwords <PCs> [cutoff]"
+    exit
+endif
 
 echo "\n==> Sorting/Merging"
 sort cwords_words | uniq -c | sort -n > cwords_pop
 
-@ start_cut = 20
-@ step_cut  = 10
+set nofPCs = `tail -1 cwords_words | wc -c | awk '{print $1-1}'`
+
+set scale1 = 1
+set scale2 = 1
+if ( $nofPCs != 5 ) then
+    set scale1 = `tail -1 cwords_pop | awk '{printf "%d", ($1 / 5000.0 + 0.50)+1}'`
+    set scale2 = `tail -1 cwords_pop | awk '{printf "%d", (5000.0 / $1 + 0.50)+1}'`
+    if ( $scale1 > 3 || $scale2 > 3 ) then
+        echo "\n==> Scaling ($scale1/$scale2) ..."
+    endif
+    if ( $scale1 > 3 ) then
+        awk -v scale="$scale1" '{printf "%d %s\n", ($1/scale+1) , $2}' cwords_pop > cwords_pop_new
+        mv cwords_pop_new cwords_pop
+    endif
+    if ( $scale2 > 3 ) then
+        awk -v scale="$scale2" '{printf "%d %s\n", (($1-1)*scale+1) , $2}' cwords_pop > cwords_pop_new
+        mv cwords_pop_new cwords_pop
+    endif
+endif
+
+set start_cut = `awk '{print $1}' cwords_pop | uniq | nl | awk '{if ($1 != $2) print $2}' | head -1 | awk '{print int($1/20)}'`
+if ( $start_cut < 2 ) then
+    set start_cut = 2
+endif
 set lines = `wc -l $1 | awk '{print $1}'`
+printf "Tentative starting cutoff is %d\n" $start_cut
+
+if ( $lines <= 50000 ) then
+    @ step_cut  = $start_cut / 2
+else
+    if ( $lines > 50000 && $start_cut < 20 && $nofPCs > 5 && $scale2 <= 3 ) then
+        @ start_cut = 10
+        @ step_cut  = 5
+    else if ( $lines > 50000 && $nofPCs > 5 && $scale2 > 3 ) then
+        set start_cut = `awk -v scale2="$scale2" 'BEGIN { print 10* int((5*scale2)/10 + 1) }'`
+        if ( $start_cut > 50 ) then
+            @ start_cut = 50
+        endif
+        @ step_cut  = 10
+    else if ( $lines > 50000 && $nofPCs < 5 && $scale1 > 3 ) then
+        @ start_cut = 10
+        @ step_cut  = 5
+    else
+        @ start_cut = 20
+        @ step_cut  = 10
+    endif
+endif
 
 
 if ( $# == 1 ) then
 
-echo "\n==> Testing cutoffs ..."
-set cut = $start_cut
-set nofcprev = 0
+    echo "\n==> Testing cutoffs ..."
+    set cut = $start_cut
+    set nofcprev = 0
 
-while ( $cut <= 400 )
+    while ( $cut <= 10000 )
 
-awk -v cut="$cut" '{if ($1 >= cut) print $1,$2}' cwords_pop | tac > cwords_selected
-awk '{print $2}' cwords_selected > cwords_selected_words
+        awk -v cut="$cut" '{if ($1 >= cut) print $1,$2}' cwords_pop | tac > cwords_selected
+        awk '{print $2}' cwords_selected > cwords_selected_words
 
-($abs_rootdir/merge < cwords_selected_words > cwords_clusters) >& cwords_testing
+        ($abs_rootdir/merge < cwords_selected_words > cwords_clusters) >& cwords_testing
 
-set nofc = `grep 'to cluster' cwords_testing | tail -1 | awk '{print $6}'`
+        set nofc = `grep 'to cluster' cwords_testing | tail -1 | awk '{print $6}'`
 
-if ( $nofc < 1 && $lines > 50000 ) then
-    echo "[1m[31mLogic failure : empty clusters. Abort.[m"
-    exit
-endif
+        if ( $nofc < 1 && $lines > 50000 ) then
+            echo "[1m[31mLogic failure : empty clusters. Abort.[m"
+            exit
+        endif
 
-printf "Cutoff %5d => %5d clusters\n" $cut $nofc
+        printf "Cutoff %5d => %5d clusters\n" $cut $nofc
 
-if ( $nofc < 1 && $lines <= 50000 ) then
-    @ nofc = 0
-    @ nofcprev = 0
-    if ( $cut <= 20 ) then
-        @ cut = 10
-    else
-        @ cut = 20
+        if ( $nofc < 1 && $lines <= 50000 ) then
+            @ nofc = 0
+            @ nofcprev = 0
+            if ( $cut <= 20 ) then
+                @ cut = 10
+            else
+                @ cut = 20
+            endif
+        endif
+
+        @ minus3 = $minus2
+        @ minus2 = $minus1
+        @ minus1 = $nofc
+
+        if ( $nofc - $nofcprev <= 0 && $cutoff == 0 ) then
+            @ cutoff = $cut
+        endif
+
+        if ( $nofc - $nofcprev >= -2 && $nofc - $nofcprev <= 1 && $cutoff > 0 ) then
+            @ cut += $step_cut
+            awk -v cut="$cut" '{if ($1 >= cut) print $1,$2}' cwords_pop | tac > cwords_selected
+            awk '{print $2}' cwords_selected > cwords_selected_words
+            ($abs_rootdir/merge < cwords_selected_words > cwords_clusters) >& cwords_testing
+            set nofc_next = `grep 'to cluster' cwords_testing | tail -1 | awk '{print $6}'`
+            @ cut -= $step_cut
+            if ( $nofc_next >= $nofc ) then
+                @ cutoff = 0
+            else
+                @ cutoff = $cut
+                @ cut = 10100
+            endif
+        endif
+
+        @ nofcprev = $nofc
+        @ cut += $step_cut
+
+    end
+
+    if ( $cut < 10100 ) then
+        echo "[1m[31mLogic failure at cluster determination. Abort.[m"
+        exit
     endif
-endif
 
-@ minus3 = $minus2
-@ minus2 = $minus1
-@ minus1 = $nofc
-
-if ( $nofc - $nofcprev <= 0 && $cutoff == 0 ) then
-    @ cutoff = $cut
-endif
-
-if ( $nofc - $nofcprev >= -2 && $nofc - $nofcprev <= 1 && $cutoff > 0 ) then
-    @ cut += $step_cut
-    awk -v cut="$cut" '{if ($1 >= cut) print $1,$2}' cwords_pop | tac > cwords_selected
-    awk '{print $2}' cwords_selected > cwords_selected_words
-    ($abs_rootdir/merge < cwords_selected_words > cwords_clusters) >& cwords_testing
-    set nofc_next = `grep 'to cluster' cwords_testing | tail -1 | awk '{print $6}'`
-    @ cut -= $step_cut
-    if ( $nofc_next >= $nofc ) then
-        @ cutoff = 0
-    else
-        @ cutoff = $cut
-        @ cut = 500
+    if ( $cutoff > 20 && $minus2 - $nofc >= 0 && $minus2 - $nofc < 5 ) then
+        @ cutoff -= $step_cut
     endif
-endif
-
-@ nofcprev = $nofc
-@ cut += $step_cut
-
-end
-
-if ( $cut < 500 ) then
-    echo "[1m[31mLogic failure at cluster determination. Abort.[m"
-    exit
-endif
-
-if ( $cutoff > 20 && $minus2 - $nofc >= 0 && $minus2 - $nofc < 5 ) then
-    @ cutoff -= $step_cut
-endif
-
-# if ( $minus3 > 0 && $minus3 - $nofc >= 2 ) then
-#     @ cutoff -= 20
-# endif
-# 
-# if ( $minus3 < 0 && $minus2 > 0 && $minus2 - $nofc >= 2 ) then
-#     @ cutoff -= 10
-# endif
-
-
 
 endif
 
