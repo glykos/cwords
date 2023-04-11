@@ -11,8 +11,8 @@ present form the program can cluster, for example, 6.3 million 5-dimensional dat
 in ~84 seconds on a old Intel Q9650 machine.
 
 Note well : the program performs density-based clustering, so, (a) it is only suitable
-for structured (not uniform) data, and, (b) only highly populated clusters will be assigned 
-(and not all data points). The implication is that depending on the structure of your 
+for structured (not uniform/smooth) data, and, (b) only highly populated clusters will be assigned. 
+The implication is that depending on the structure of your 
 data, only a subset of the data points will be assigned to clusters.
 
 
@@ -75,7 +75,7 @@ The file you want is `cwords_FINAL` which will look like this :
 ```
 
 The first column is the data point identifier, the second column is the cluster 
-to which the point belongs. The clusters identifiers are integers. The rest of the 
+to which the point belongs. The cluster identifiers are integers. The rest of the 
 columns are the coordinates of the points and are included so that you can check 
 what the clustering did.
 
@@ -112,6 +112,21 @@ Too numerous to mention, but the important ones are :
   dimensions.
 
 
+
+## How it works
+
+Divide each dimension of the data in bins, and assign an alphabet letter
+to each bin. The result is that each point is getting assigned to a word
+(ie. a 5-letter word for 5D data, 7-letter words for 7D data, etc).
+
+These words are sorted and uniquified (counted). Then, words with small 
+Hamming distance are merged together to form the clusters. The selection of the density 
+cutoff for identifying clusters is determined automatically using 
+empirical ad hockery : the program aims (starting from a very low 
+density cutoff) to identify the first stationary inflection point of the 
+function [density cutoff vs. number of clusters]. Correctly identifying 
+the density cutoff for any given data set is the part that 
+is the weakest and most prone to failure.
 
 ____________________________________________________________________
 
