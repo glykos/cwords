@@ -80,6 +80,24 @@ columns are the coordinates of the points and are included so that you can check
 what the clustering did.
 
 
+## Examining the results from clustering
+
+The easiest way is to compare 2D projections. What we usually do is to compare, 
+for example, the distribution of the first two dimensions from the original data
+versus the distribution of clusters (from the clustered data, again the same two dimensions).
+
+As an example, the image that follows compares : 
+
+* On the left, the original data distribution (Dimension 1 vs. Dimension 2). This is on a
+  logarithmic scale to highlight details (low density regions). The original data is 6.3 million
+  points in 5D.
+* On the right, the clusters assigned by the program (with different colors for different clusters).
+
+![Original vs clustered 5D data](https://user-images.githubusercontent.com/39924257/231256427-4a34effe-0931-48e0-a07e-27f0e8fe4c60.png)
+
+
+
+
 ## Limitations
 
 Too numerous to mention, but the important ones are :
