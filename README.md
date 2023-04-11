@@ -12,7 +12,8 @@ in ~84 seconds on a old Intel Q9650 machine.
 
 Note well : the program performs density-based clustering, so, (a) it is only suitable
 for structured (not uniform) data, and, (b) only highly populated clusters will be assigned 
-(and not all data points). Depending on the structure of your data 
+(and not all data points). The implication is that depending on the structure of your 
+data, only a subset of the data points will be assigned to clusters.
 
 
 
