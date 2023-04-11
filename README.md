@@ -7,8 +7,8 @@ ____________________________________________________________________
 
 `cwords` is an attempt for very fast clustering of multidimensional data (for example,
 data from principal component analysis). This is a work in progress, but even in its 
-present form the program can cluster, for example, 6.3 million 5D data points in 84 seconds
-on a old Intel Q9650 machine.
+present form the program can cluster, for example, 6.3 million 5-dimensional data points 
+in ~84 seconds on a old Intel Q9650 machine.
 
 Note well : the program performs density-based clustering, so, (a) it is only suitable
 for structured (not uniform) data, and, (b) only highly populated clusters will be assigned 
