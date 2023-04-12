@@ -82,7 +82,7 @@ what the clustering did.
 
 ## Examining the results from clustering
 
-The easiest way is to compare 2D projections. What we usually do is to compare, 
+The easiest -but wrong- way is to compare 2D projections. What we usually do is to compare, 
 for example, the distribution of the first two dimensions from the original data
 versus the distribution of clusters (from the clustered data, again the same two dimensions).
 
@@ -107,15 +107,18 @@ Too numerous to mention, but the important ones are :
   are performed with data sets containing millions of data points.
 * The program has been optimized for 5-dimensional data, because this is what
   we mostly have from our work (analysis of molecular dynamics simulations).
-  I wouldn't be surprised if you find problems with other dimensionalities.
+  I wouldn't be surprised if you face problems with other dimensionalities.
 * The data are assumed to have similar/comparable range of values along the various 
   dimensions.
+* The data are assumed to have slowly-varying densities. If there is very high
+  resolution variation within the data, then this variation will be lost upon 
+  clustering (the image below will help visualize what I'm talking about).
 
 
 
 ## How it works
 
-Divide each dimension of the data in bins, and assign an alphabet letter
+Divide each dimension of the data into bins, and assign an alphabet letter
 to each bin. The result is that each point is getting assigned to a word
 (ie. a 5-letter word for 5D data, 7-letter words for 7D data, etc).
 
