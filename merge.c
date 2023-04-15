@@ -95,8 +95,12 @@ int main()
         }
     
         if ( added > 0 ) 
-            { 
-                fprintf(stderr, "Added %6d members to cluster %3d\n", added, current );
+            {
+                if ( added == 1 )
+                    fprintf(stderr, "Added %6d member  to cluster %3d\n", added, current );
+                else
+                    fprintf(stderr, "Added %6d members to cluster %3d\n", added, current );
+
                 printed = 1;
             }
     }

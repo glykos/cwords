@@ -172,6 +172,10 @@ if ( $# == 1 ) then
             endif
         endif
 
+        if ( $minus3 - $minus2 >= 10 && $minus2 - $minus1 >= 5 && $step_cut > 5 ) then
+            set step_cut = 5
+        endif
+
         @ nofcprev = $nofc
         @ cut += $step_cut
 

@@ -1,5 +1,5 @@
 # cwords
-Fast clustering of large multidimensional data sets
+Fast and memory efficient clustering of large multidimensional data sets
 ____________________________________________________________________
 
 
@@ -8,7 +8,10 @@ ____________________________________________________________________
 `cwords` is an attempt for very fast clustering of multidimensional data (for example,
 data from principal component analysis). This is a work in progress, but even in its 
 present form the program can cluster, for example, 6.3 million 5-dimensional data points 
-in ~84 seconds on a old Intel Q9650 machine.
+in ~84 seconds on a old Intel Q9650 machine. Additionally, the memory footprint of the program
+is minimal _and_ constant. You can safely forget that the OOM killer even exists.
+Having said that, the quality of clustering is markedly inferior compared with 
+the results obtained from packages such as HDBSCAN.
 
 Note well : the program performs density-based clustering, so, (a) it is only suitable
 for structured (not uniform/smooth) data, and, (b) only highly populated clusters will be assigned. 
