@@ -154,7 +154,11 @@ if ( $# == 1 ) then
         @ minus1 = $nofc
 
         if ( $nofc - $nofcprev <= 0 && $cutoff == 0 ) then
-            @ cutoff = $cut
+            if ( $minus3 < 0 ) then
+                @ cutoff = $cut
+            else if ( $minus3 >= $minus1 ) then
+                @ cutoff = $cut
+            endif
         endif
 
         if ( $nofc - $nofcprev >= -2 && $nofc - $nofcprev <= 1 && $cutoff > 0 ) then
